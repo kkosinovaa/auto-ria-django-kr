@@ -1,0 +1,50 @@
+services:
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    env_file:
+      - .env.docker
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - mysql --user=root --password="$$MYSQL_ROOT_PASSWORD" --execute="SELECT 1" --silent
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 15s
+
+  migrate:
+    image: autoria-backend:latest
+    env_file:
+      - .env.docker
+    command: python manage.py migrate --noinput
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    image: autoria-backend:latest
+    restart: unless-stopped
+    env_file:
+      - .env.docker
+    ports:
+      - "8890:8000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2
+
+  currency_scheduler:
+    image: autoria-backend:latest
+    restart: unless-stopped
+    env_file:
+      - .env.docker
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    command: python manage.py run_currency_scheduler
+
+volumes:
+  mysql_data:

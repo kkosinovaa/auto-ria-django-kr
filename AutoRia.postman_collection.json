@@ -1,0 +1,549 @@
+{
+  "info": {
+    "name": "AutoRia Clone API",
+    "description": "Django REST Framework AutoRia Clone. Demo users: demo_basic, demo_premium, demo_manager, demo_admin. Demo password: DemoPass123!. Run the appropriate login request before using protected endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8890"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "manager_token",
+      "value": ""
+    },
+    {
+      "key": "admin_token",
+      "value": ""
+    },
+    {
+      "key": "listing_id",
+      "value": "2"
+    },
+    {
+      "key": "invalid_listing_id",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register Seller",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/users/register/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"new_seller\",\"email\":\"new@example.com\",\"password\":\"StrongPass123!\"}"
+            }
+          }
+        },
+        {
+          "name": "Login Premium Seller",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const data = pm.response.json();",
+                  "    pm.collectionVariables.set('token', data.access);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/auth/login/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"demo_premium\",\"password\":\"DemoPass123!\"}"
+            }
+          }
+        },
+        {
+          "name": "Login Manager",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    pm.collectionVariables.set('manager_token', pm.response.json().access);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/auth/login/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"demo_manager\",\"password\":\"DemoPass123!\"}"
+            }
+          }
+        },
+        {
+          "name": "Login Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    pm.collectionVariables.set('admin_token', pm.response.json().access);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/auth/login/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"demo_admin\",\"password\":\"DemoPass123!\"}"
+            }
+          }
+        },
+        {
+          "name": "My Profile",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{base_url}}/api/users/me/"
+          }
+        },
+        {
+          "name": "Refresh JWT",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/auth/refresh/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"refresh\":\"PASTE_REFRESH_TOKEN_HERE\"}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cars",
+      "item": [
+        {
+          "name": "All Brands",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/cars/brands/"
+          }
+        },
+        {
+          "name": "BMW Models",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/cars/models/?brand=1"
+          }
+        },
+        {
+          "name": "Request New Brand",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/cars/requests/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"request_type\":\"brand\",\"name\":\"Lamborghini\"}"
+            }
+          }
+        },
+        {
+          "name": "Pending Catalog Requests",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{base_url}}/api/cars/requests/pending/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Listings",
+      "item": [
+        {
+          "name": "All Active Listings",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/listings/"
+          }
+        },
+        {
+          "name": "Filter by BMW",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/listings/?brand=1"
+          }
+        },
+        {
+          "name": "Filter by Region and Year",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/listings/?region=Lviv&min_year=2018"
+          }
+        },
+        {
+          "name": "Search BMW",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/listings/?search=BMW"
+          }
+        },
+        {
+          "name": "Listing Details",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/listings/{{listing_id}}/"
+          }
+        },
+        {
+          "name": "Create Listing",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/listings/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"brand\":1,\"model\":1,\"title\":\"BMW X5 Demo\",\"description\":\"Excellent condition\",\"year\":2021,\"mileage\":40000,\"price\":\"48000\",\"currency\":\"USD\",\"region\":\"Lviv\"}"
+            }
+          }
+        },
+        {
+          "name": "My Listings",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{base_url}}/api/listings/my/"
+          }
+        },
+        {
+          "name": "Edit Listing",
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/listings/{{listing_id}}/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"description\":\"Updated description\"}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Premium",
+      "item": [
+        {
+          "name": "Purchase Premium Mock",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{base_url}}/api/users/premium/purchase/"
+          }
+        },
+        {
+          "name": "Listing Analytics",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{base_url}}/api/analytics/listings/{{listing_id}}/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Currency",
+      "item": [
+        {
+          "name": "Exchange Rates",
+          "request": {
+            "method": "GET",
+            "url": "{{base_url}}/api/currency/rates/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Manager",
+      "item": [
+        {
+          "name": "Review Listings",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{base_url}}/api/listings/manager/review/"
+          }
+        },
+        {
+          "name": "Block User",
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/users/manager/users/1/status/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"is_active\":false}"
+            }
+          }
+        },
+        {
+          "name": "Delete Invalid Listing",
+          "request": {
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{manager_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{base_url}}/api/listings/manager/{{invalid_listing_id}}/delete/"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Administrator",
+      "item": [
+        {
+          "name": "Create Manager",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/users/managers/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"demo_new_manager\",\n  \"email\": \"new_manager@example.com\",\n  \"password\": \"StrongPass123!\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Forbidden Words",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": "{{base_url}}/api/listings/forbidden-words/"
+          }
+        },
+        {
+          "name": "Add Forbidden Word",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{admin_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{base_url}}/api/listings/forbidden-words/",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"word\":\"badword2\"}"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
